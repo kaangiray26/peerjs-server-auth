@@ -12,7 +12,7 @@ class Push {
     }
 
     async get_access_token() {
-        console.log("Getting access token");
+        console.log("Getting access token...");
         const client = new JWT({
             email: process.env.FIREBASE_client_email,
             key: process.env.FIREBASE_private_key,
@@ -58,6 +58,7 @@ class Push {
         }
 
         // Send message
+        console.log("Sending message...");
         const response = await fetch(this.endpoint + "messages:send", {
             method: 'POST',
             headers: {
@@ -66,11 +67,11 @@ class Push {
             },
             body: JSON.stringify({
                 message: {
-                    token: notification_key,
                     notification: {
                         body: body,
                         title: from,
-                    }
+                    },
+                    token: notification_key
                 }
             })
         })

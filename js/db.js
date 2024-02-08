@@ -28,11 +28,11 @@ async function register(secret, token) {
 }
 
 async function get_notification_key(secret) {
-    const notification_key = await db.oneOrNone("SELECT notification_key FROM notification WHERE secret = $1", [secret]);
-    if (!notification_key) {
+    const response = await db.oneOrNone("SELECT notification_key FROM notification WHERE secret = $1", [secret]);
+    if (!response) {
         return null;
     }
-    return notification_key;
+    return response.notification_key;
 }
 
 export default {
