@@ -18,6 +18,25 @@ async function init() {
     })
 }
 
+async function register(secret, token) {
+    // Save token and secret
+    const response = await db.one("INSERT INTO notification (secret, notification_key) VALUES ($1, $2) RETURNING notification_key", [secret, token]);
+    if (!response) {
+        return null;
+    }
+    return response;
+}
+
+async function get_notification_key(secret) {
+    const notification_key = await db.oneOrNone("SELECT notification_key FROM notification WHERE secret = $1", [secret]);
+    if (!notification_key) {
+        return null;
+    }
+    return notification_key;
+}
+
 export default {
-    init
+    init,
+    register,
+    get_notification_key
 }

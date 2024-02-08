@@ -1,4 +1,3 @@
+docker-compose-dev.yml
 node_modules
 package-lock.json
-js/config.js
-js/config.json

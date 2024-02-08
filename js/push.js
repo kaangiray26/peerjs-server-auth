@@ -28,18 +28,12 @@ class Push {
             return
         }
 
-        const { token, secret } = req.body;
-
-        // Save token and secret
-        db.one("INSERT INTO notification (secret, notification_key) VALUES ($1, $2) RETURNING id", [secret, token])
-            .then(data => {
-                console.log("Token registered:", data.id);
-                res.status(200).send("Token registered");
-            })
-            .catch(error => {
-                console.log("Error registering token:", error);
-                res.status(500).send("Error registering token");
-            });
+        const notification_key = await db.register(req.body.secret, req.body.token);
+        if (!notification_key) {
+            res.status(500).send("Failed to register for push notifications.");
+            return
+        }
+        res.status(200).send("Successfully registered for push notifications.");
     }
 
 
@@ -57,7 +51,7 @@ class Push {
         }
 
         // Get notification_key
-        const notification_key = await db.one("SELECT notification_key FROM notification WHERE secret = $1", [to]);
+        const notification_key = await db.get_notification_key(to);
         if (!notification_key) {
             res.status(404).send("User is not registered for push notifications.");
             return
