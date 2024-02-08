@@ -1,0 +1,39 @@
+version: '3'
+services:
+    app:
+        image: kaangiray26/messenger-push:1.0
+        restart: on-failure
+        ports:
+            - "3000:3000"
+        depends_on:
+            postgres:
+                condition: service_healthy
+        environment:
+            version: 1.0
+            port: 3000
+            NODE_ENV: production 
+            POSTGRES_HOST: postgres
+            POSTGRES_USER: messenger
+            POSTGRES_PASSWORD: messenger
+            POSTGRES_PORT: 5432
+            POSTGRES_DB: messenger
+            FIREBASE_project_id: "<project_id>"
+            FIREBASE_client_email: "<client_email>"
+            FIREBASE_private_key: "<private_key>"
+
+    postgres:
+        image: kaangiray26/postgres:2.0
+        restart: always
+        environment:
+            POSTGRES_USER: messenger
+            POSTGRES_PASSWORD: messenger
+            POSTGRES_DB: messenger
+        volumes:
+            - db-metadata:/var/lib/postgresql/data
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U messenger" ]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+volumes:
+    db-metadata:
