@@ -30,10 +30,33 @@ class Push {
 
         const notification_key = await db.register(req.body.secret, req.body.token);
         if (!notification_key) {
-            res.status(500).send("Failed to register for push notifications.");
+            res.status(500).send("Error registering for push notifications.");
             return
         }
-        res.status(200).send("Successfully registered for push notifications.");
+        res.status(200).send(notification_key)
+    }
+
+    async fallback_send(notification_key, from, body) {
+        await this.get_access_token();
+
+        return await fetch(this.endpoint + "messages:send", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.access_token}`
+            },
+            body: JSON.stringify({
+                message: {
+                    notification: {
+                        body: body,
+                        title: from,
+                    },
+                    token: notification_key
+                }
+            })
+        })
+            .then(response => response.json())
+            .catch(err => err);
     }
 
 
@@ -75,10 +98,17 @@ class Push {
                 }
             })
         })
-            .then(response => response.json())
+            .then(response => response.json());
+
+        // Check for authentication error
+        if (response.error && response.error.code === 401) {
+            console.log("Access token expired. Refreshing...");
+            return await this.fallback_send(notification_key, from, body);
+        }
 
         // Handle response
-        console.log(response);
+        console.log("Response:", response);
+        return res.status(200).json(response);
     }
 }
 

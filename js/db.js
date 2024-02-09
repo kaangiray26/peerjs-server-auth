@@ -14,13 +14,13 @@ const db = pgp({
 async function init() {
     db.task(async t => {
         // Create tables if they don't exist
-        await t.none("CREATE TABLE IF NOT EXISTS notification (id SERIAL PRIMARY KEY, secret TEXT, notification_key TEXT);");
+        await t.none("CREATE TABLE IF NOT EXISTS notification (secret TEXT PRIMARY KEY, notification_key TEXT)");
     })
 }
 
 async function register(secret, token) {
     // Save token and secret
-    const response = await db.one("INSERT INTO notification (secret, notification_key) VALUES ($1, $2) RETURNING notification_key", [secret, token]);
+    const response = await db.one("INSERT INTO notification (secret, notification_key) VALUES ($1, $2) ON CONFLICT (secret) DO UPDATE SET notification_key = $2 RETURNING notification_key", [secret, token]);
     if (!response) {
         return null;
     }
