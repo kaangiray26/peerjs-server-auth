@@ -90,7 +90,7 @@ class Push {
             },
             body: JSON.stringify({
                 message: {
-                    notification: {
+                    data: {
                         body: body,
                         title: from,
                     },

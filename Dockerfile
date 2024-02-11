@@ -1,4 +1,4 @@
-FROM node:19-alpine
+FROM node:20.11.0-alpine
 WORKDIR /messenger-push
 
 # Copy files
