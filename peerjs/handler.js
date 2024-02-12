@@ -9,10 +9,40 @@ function handleTransmission(message, realm) {
     const { type, src, dst } = message;
     const destinationClient = realm.getClientById(dst);
 
+    // User is connected!
     if (destinationClient) {
         const socket = destinationClient.getSocket();
-        const data = JSON.stringify(message);
-        socket.send(data);
+        try {
+            if (socket) {
+                const data = JSON.stringify(message);
+                socket.send(data);
+            } else {
+                throw new Error("Peer dead");
+            }
+        } catch (e) {
+            if (socket) {
+                socket.close();
+            } else {
+                realm.removeClientById(dst);
+            }
+
+            handleTransmission({
+                type: 'LEAVE',
+                src: dst,
+                dst: src
+            }, realm)
+        }
+    } else {
+        const ignoredTypes = ['LEAVE', 'EXPIRE'];
+
+        if (!ignoredTypes.includes(type) && dst) {
+            realm.addMessageToQueue(dst, message);
+        } else if (type === 'LEAVE' && !dst) {
+            realm.removeClientById(src);
+        } else {
+            // Unavailable destination specified with message LEAVE or EXPIRE
+            // Ignore
+        }
     }
 }
 

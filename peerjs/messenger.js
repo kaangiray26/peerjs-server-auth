@@ -31,7 +31,7 @@ wss.on('connection', async (ws, req) => {
     }
 
     // Create new client
-    console.log("New connection:", id, token, key);
+    console.log("New connection:", id);
     const newClient = new Client(id, token);
     newClient.setSocket(ws);
     realm.setClient(newClient, id);
@@ -46,6 +46,11 @@ wss.on('connection', async (ws, req) => {
         message.src = id;
         handler.message_handler(message, realm);
     });
+
+    ws.on('close', () => {
+        console.log("Connection closed:", id);
+        realm.removeClientById(id);
+    })
 
     ws.on('error', console.error);
 });
