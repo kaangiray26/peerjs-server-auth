@@ -53,7 +53,6 @@ class MessagesExpire {
                 const seenKey = `${message.src}_${message.dst}`;
 
                 if (!seen[seenKey]) {
-                    console.log("EXPIRE");
                     this.messageHandler.handle({
                         type: 'EXPIRE',
                         src: message.dst,

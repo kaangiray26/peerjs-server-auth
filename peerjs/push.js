@@ -11,6 +11,10 @@ class Push {
         this.send = this.send.bind(this);
     }
 
+    async init() {
+        await this.get_access_token();
+    }
+
     async get_access_token() {
         console.log("Getting access token...");
         const client = new JWT({
@@ -22,18 +26,29 @@ class Push {
         this.access_token = token.access_token;
     }
 
-    async register(req, res) {
-        if (!['token', 'secret'].every(key => req.body.hasOwnProperty(key))) {
-            res.status(400).send("Please provide token, secret parameters");
+    async register(content, res) {
+        if (!['token', 'secret'].every(key => content.hasOwnProperty(key))) {
+            res.writeHead(400, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({
+                'message': "Please provide token, secret parameters"
+            }))
             return
         }
 
-        const notification_key = await db.register(req.body.secret, req.body.token);
+        const { secret, token } = content;
+
+        const notification_key = await db.register(secret, token);
         if (!notification_key) {
-            res.status(500).send("Error registering for push notifications.");
+            res.writeHead(500, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({
+                'message': "Error registering for push notifications"
+            }))
             return
         }
-        res.status(200).send(notification_key)
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({
+            'notification_key': notification_key
+        }))
     }
 
     async fallback_send(notification_key, from, body) {
@@ -60,23 +75,24 @@ class Push {
     }
 
 
-    async send(req, res) {
-        if (!['from', 'to', 'body'].every(key => req.body.hasOwnProperty(key))) {
-            res.status(400).send("Please provide from, to, and body parameters");
+    async send(content, res) {
+        if (!['from', 'to', 'body'].every(key => content.hasOwnProperty(key))) {
+            res.writeHead(400, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({
+                'message': "Please provide from, to, body parameters"
+            }))
             return
         }
 
-        const { from, to, body } = req.body;
-
-        // Check if access token is expired
-        if (!this.access_token) {
-            await this.get_access_token();
-        }
+        const { from, to, body } = content;
 
         // Get notification_key
         const notification_key = await db.get_notification_key(to);
         if (!notification_key) {
-            res.status(404).send("User is not registered for push notifications.");
+            res.writeHead(400, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({
+                'message': "User is not registered for push notifications"
+            }))
             return
         }
 
@@ -108,8 +124,9 @@ class Push {
 
         // Handle response
         console.log("Response:", response);
-        return res.status(200).json(response);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(response);
     }
 }
 
-export default Push
+export default Push;
