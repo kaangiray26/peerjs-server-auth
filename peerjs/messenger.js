@@ -1,5 +1,6 @@
 // messenger.js
 
+import { createServer } from 'https';
 import { WebSocketServer } from 'ws';
 import db from './db.js';
 import Client from './client.js';
@@ -13,7 +14,7 @@ const options = {
     port: 3000,
     path: '/peerjs',
     expire_timeout: 5000,
-    alive_timeout: 90000,
+    alive_timeout: 60000,
     concurrent_limit: 5000,
     cleanup_out_msgs: 1000,
 }
