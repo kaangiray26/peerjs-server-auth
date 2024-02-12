@@ -1,5 +1,7 @@
 // realm.js
 
+import { MessageQueue } from './messageQueue.js';
+
 class Realm {
     constructor() {
         this.clients = new Map();

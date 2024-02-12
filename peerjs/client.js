@@ -4,6 +4,7 @@ class Client {
     constructor(id, token) {
         this.id = id;
         this.token = token;
+        this.socket = null;
         this.lastPing = new Date().getTime();
     }
 
@@ -14,6 +15,7 @@ class Client {
     getToken() {
         return this.token;
     }
+
     getSocket() {
         return this.socket;
     }
