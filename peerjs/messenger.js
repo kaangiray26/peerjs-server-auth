@@ -4,6 +4,9 @@ import { WebSocketServer } from 'ws';
 import db from './db.js';
 import handler from './handler.js';
 import Client from './client.js';
+import Realm from './realm.js';
+
+const realm = new Realm();
 
 const wss = new WebSocketServer({
     host: '0.0.0.0',
@@ -27,9 +30,11 @@ wss.on('connection', async (ws, req) => {
         return;
     }
 
-    // Create the client
+    // Create new client
     console.log("New connection:", id, token, key);
-    ws.client = new Client(id, token);
+    const newClient = new Client(id, token);
+    newClient.setSocket(ws);
+    realm.setClient(newClient, id);
 
     // Send open message
     ws.send(JSON.stringify({
@@ -37,7 +42,9 @@ wss.on('connection', async (ws, req) => {
     }));
 
     ws.on('message', (data) => {
-        handler.message_handler(ws, data);
+        const message = JSON.parse(data.toString());
+        message.src = id;
+        handler.message_handler(message, realm);
     });
 
     ws.on('error', console.error);
