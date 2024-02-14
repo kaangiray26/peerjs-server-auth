@@ -15,8 +15,8 @@ const options = {
     host: '0.0.0.0',
     port: 3000,
     path: '/peerjs',
-    expire_timeout: 5000,
-    alive_timeout: 60000,
+    expire_timeout: 1000,
+    alive_timeout: 5000,
     concurrent_limit: 5000,
     cleanup_out_msgs: 1000,
 }

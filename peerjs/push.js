@@ -125,7 +125,9 @@ class Push {
         // Handle response
         console.log("Response:", response);
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(response);
+        res.end(JSON.stringify({
+            'message': "Message sent"
+        }));
     }
 }
 
