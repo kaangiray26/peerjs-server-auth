@@ -11,12 +11,14 @@ import MessagesExpire from './messagesExpire.js';
 import CheckBrokenConnections from './checkBrokenConnections.js';
 
 // Options
+// TODO: Inspect the effects of the expire_timeout,
+// maybe there is a more optimal value ?
 const options = {
     host: '0.0.0.0',
     port: 3000,
     path: '/peerjs',
-    expire_timeout: 1000,
-    alive_timeout: 5000,
+    expire_timeout: 5000,
+    alive_timeout: 60000,
     concurrent_limit: 5000,
     cleanup_out_msgs: 1000,
 }
@@ -145,14 +147,14 @@ wss.on('connection', async (ws, req) => {
     // Create new client
     console.log("New connection:", id);
     const newClient = new Client(id, token);
-    newClient.setSocket(ws);
-    realm.setClient(newClient, id);
+    newClient.setOnline();
 
     // Send open message
     ws.send(JSON.stringify({
         type: 'OPEN'
     }));
 
+    // Event handlers
     ws.on('message', (data) => {
         const message = JSON.parse(data.toString());
         message.src = id;
@@ -161,14 +163,19 @@ wss.on('connection', async (ws, req) => {
 
     ws.on('close', () => {
         console.log("Connection closed:", id);
-        realm.removeClientById(id);
+        newClient.setOffline();
     })
 
     ws.on('error', console.error);
 
-    messagesExpire.startMessagesExpiration();
-    checkBrokenConnections.start();
+    // Attach socket to the client
+    newClient.setSocket(ws);
+    realm.setClient(newClient, id);
 });
+
+// Start services
+messagesExpire.startMessagesExpiration();
+checkBrokenConnections.start();
 
 server.listen(options.port, options.host, async () => {
     // Setup the database

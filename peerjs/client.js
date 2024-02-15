@@ -5,6 +5,7 @@ class Client {
         this.id = id;
         this.token = token;
         this.socket = null;
+        this.online = true;
         this.lastPing = new Date().getTime();
     }
 
@@ -30,6 +31,14 @@ class Client {
 
     setLastPing(lastPing) {
         this.lastPing = lastPing;
+    }
+
+    setOnline() {
+        this.online = true;
+    }
+
+    setOffline() {
+        this.online = false;
     }
 }
 

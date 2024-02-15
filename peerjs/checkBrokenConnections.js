@@ -44,7 +44,9 @@ class CheckBrokenConnections {
 
             if (timeSinceLastPing < aliveTimeout) continue;
 
+            // TODO: Maybe just set the client as offline ?
             try {
+                console.log("Closing connection:", clientId);
                 client.getSocket()?.close();
             } finally {
                 this.realm.clearMessageQueue(clientId);
