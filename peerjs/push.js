@@ -6,9 +6,6 @@ class Push {
     constructor() {
         this.access_token = null;
         this.endpoint = `https://fcm.googleapis.com/v1/projects/${process.env.FIREBASE_project_id}/`;
-
-        // Bind methods
-        this.send = this.send.bind(this);
     }
 
     async init() {
