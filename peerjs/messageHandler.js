@@ -15,14 +15,8 @@ class MessageHandler {
         const { type, src, dst } = message;
         const destinationClient = this.realm.getClientById(dst);
 
-        // Check if destinationClient is defined 
-        if (!destinationClient) {
-            console.log("Destination client not found!");
-            return
-        }
-
         // Check if destinationClient is alive
-        if (destinationClient.isAlive()) {
+        if (destinationClient && destinationClient.isAlive()) {
             const socket = destinationClient.getSocket();
             if (!socket) {
                 throw new Error("Peer dead");
