@@ -9,6 +9,11 @@ class Client {
         this.lastPing = new Date().getTime();
     }
 
+    close() {
+        this.lastPing = 0;
+        this.socket.close();
+    }
+
     getId() {
         return this.id;
     }

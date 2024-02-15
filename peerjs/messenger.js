@@ -11,8 +11,6 @@ import MessagesExpire from './messagesExpire.js';
 import CheckBrokenConnections from './checkBrokenConnections.js';
 
 // Options
-// TODO: Inspect the effects of the expire_timeout,
-// maybe there is a more optimal value ?
 const options = {
     host: '0.0.0.0',
     port: 3000,
@@ -111,8 +109,8 @@ const server = createServer((req, res) => {
 // Services
 const realm = new Realm();
 const messageHandler = new MessageHandler(realm, push);
-const messagesExpire = new MessagesExpire(realm, options, messageHandler);
-const checkBrokenConnections = new CheckBrokenConnections(realm, options);
+// const messagesExpire = new MessagesExpire(realm, options, messageHandler);
+// const checkBrokenConnections = new CheckBrokenConnections(realm, options);
 
 // WebSockets
 const wss = new WebSocketServer({
@@ -144,9 +142,9 @@ wss.on('connection', async (ws, req) => {
         return;
     }
 
-    // Create new client
+    // Create new client if it doesn't exist
     console.log("New connection:", id);
-    const client = new Client(id, token);
+    const client = new Client(id, key);
 
     // Send open message
     ws.send(JSON.stringify({
@@ -162,7 +160,7 @@ wss.on('connection', async (ws, req) => {
 
     ws.on('close', () => {
         console.log("Connection closed:", id);
-        client.setLastPing(0);
+        client.close();
     })
 
     ws.on('error', console.error);
@@ -171,10 +169,6 @@ wss.on('connection', async (ws, req) => {
     client.setSocket(ws);
     realm.setClient(client, id);
 });
-
-// Start services
-messagesExpire.startMessagesExpiration();
-// checkBrokenConnections.listen();
 
 server.listen(options.port, options.host, async () => {
     // Setup the database

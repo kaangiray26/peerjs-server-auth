@@ -35,45 +35,7 @@ class MessageHandler {
 
         // Fallback using Firebase
         if (message.type == "OFFER") {
-            console.log("\nDestination client not alive, using Firebase:",);
             this.push.send_metadata(message.payload.metadata)
-        }
-        return
-
-        // User is connected!
-        if (destinationClient) {
-            const socket = destinationClient.getSocket();
-            try {
-                if (socket) {
-                    const data = JSON.stringify(message);
-                    socket.send(data);
-                } else {
-                    throw new Error("Peer dead");
-                }
-            } catch (e) {
-                if (socket) {
-                    socket.close();
-                } else {
-                    this.realm.removeClientById(dst);
-                }
-
-                this.handleTransmission({
-                    type: 'LEAVE',
-                    src: dst,
-                    dst: src
-                }, this.realm)
-            }
-        } else {
-            const ignoredTypes = ['LEAVE', 'EXPIRE'];
-
-            if (!ignoredTypes.includes(type) && dst) {
-                this.realm.addMessageToQueue(dst, message);
-            } else if (type === 'LEAVE' && !dst) {
-                this.realm.removeClientById(src);
-            } else {
-                // Unavailable destination specified with message LEAVE or EXPIRE
-                // Ignore
-            }
         }
     }
 
