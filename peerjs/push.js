@@ -74,6 +74,54 @@ class Push {
             .catch(err => err);
     }
 
+    async send_metadata(metadata) {
+        // Check if metadata is valid
+        if (!['from', 'to', 'body'].every(key => metadata.hasOwnProperty(key))) {
+            return {
+                'message': "Please provide from, to, body parameters"
+            }
+        }
+
+        // Get values
+        const { from, to, body } = metadata;
+
+        // Get notification_key
+        const notification_key = await db.get_notification_key(to);
+        if (!notification_key) {
+            res.writeHead(400, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({
+                'message': "User is not registered for push notifications"
+            }))
+            return
+        }
+
+        // Send message
+        console.log("Sending message...");
+        const response = await fetch(this.endpoint + "messages:send", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.access_token}`
+            },
+            body: JSON.stringify({
+                message: {
+                    data: {
+                        body: body,
+                        title: from,
+                    },
+                    token: notification_key
+                }
+            })
+        })
+            .then(response => response.json());
+
+        // Check for authentication error
+        if (response.error && response.error.code === 401) {
+            console.log("Access token expired. Refreshing...");
+            return await this.fallback_send(notification_key, from, body);
+        }
+    }
+
 
     async send(content, res) {
         if (!['from', 'to', 'body'].every(key => content.hasOwnProperty(key))) {

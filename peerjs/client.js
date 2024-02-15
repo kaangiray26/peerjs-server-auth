@@ -1,11 +1,11 @@
 // client.js
+import options from './config.js';
 
 class Client {
     constructor(id, token) {
         this.id = id;
         this.token = token;
         this.socket = null;
-        this.online = true;
         this.lastPing = new Date().getTime();
     }
 
@@ -33,12 +33,9 @@ class Client {
         this.lastPing = lastPing;
     }
 
-    setOnline() {
-        this.online = true;
-    }
-
-    setOffline() {
-        this.online = false;
+    isAlive() {
+        const nowTime = new Date().getTime();
+        return nowTime - this.lastPing < options.alive_timeout;
     }
 }
 

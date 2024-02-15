@@ -18,7 +18,7 @@ const options = {
     port: 3000,
     path: '/peerjs',
     expire_timeout: 5000,
-    alive_timeout: 60000,
+    alive_timeout: 6000,
     concurrent_limit: 5000,
     cleanup_out_msgs: 1000,
 }
@@ -110,7 +110,7 @@ const server = createServer((req, res) => {
 
 // Services
 const realm = new Realm();
-const messageHandler = new MessageHandler(realm);
+const messageHandler = new MessageHandler(realm, push);
 const messagesExpire = new MessagesExpire(realm, options, messageHandler);
 const checkBrokenConnections = new CheckBrokenConnections(realm, options);
 
@@ -146,8 +146,7 @@ wss.on('connection', async (ws, req) => {
 
     // Create new client
     console.log("New connection:", id);
-    const newClient = new Client(id, token);
-    newClient.setOnline();
+    const client = new Client(id, token);
 
     // Send open message
     ws.send(JSON.stringify({
@@ -163,19 +162,19 @@ wss.on('connection', async (ws, req) => {
 
     ws.on('close', () => {
         console.log("Connection closed:", id);
-        newClient.setOffline();
+        client.setLastPing(0);
     })
 
     ws.on('error', console.error);
 
     // Attach socket to the client
-    newClient.setSocket(ws);
-    realm.setClient(newClient, id);
+    client.setSocket(ws);
+    realm.setClient(client, id);
 });
 
 // Start services
 messagesExpire.startMessagesExpiration();
-checkBrokenConnections.start();
+// checkBrokenConnections.listen();
 
 server.listen(options.port, options.host, async () => {
     // Setup the database

@@ -32,7 +32,6 @@ class MessagesExpire {
 
     pruneOutstanding() {
         const destinationClientsIds = this.realm.getClientsIdsWithQueue();
-        console.log(this.config.expire_timeout, "IDs with queue:", destinationClientsIds);
 
         const now = new Date().getTime();
         const maxDiff = this.config.expire_timeout;
