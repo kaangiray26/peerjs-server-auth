@@ -61,25 +61,6 @@ const server = createServer((req, res) => {
         return
     }
 
-    // Route: /send
-    if (req.method == "POST" && req.url == "/send") {
-        // Check content type
-        if (!check_content_type(req, res)) {
-            res.end();
-            return
-        }
-
-        // Get request body
-        let body = '';
-        req.on('data', (chunk) => {
-            body += chunk;
-        })
-        req.on('end', () => {
-            push.send(JSON.parse(body), res);
-        })
-        return
-    }
-
     // Route: /register
     if (req.method == "POST" && req.url == "/register") {
         // Check content type
