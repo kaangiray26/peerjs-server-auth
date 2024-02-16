@@ -7,8 +7,8 @@ import db from './db.js';
 import Client from './client.js';
 import Realm from './realm.js';
 import MessageHandler from './messageHandler.js';
-import MessagesExpire from './messagesExpire.js';
-import CheckBrokenConnections from './checkBrokenConnections.js';
+// import MessagesExpire from './messagesExpire.js';
+// import CheckBrokenConnections from './checkBrokenConnections.js';
 
 // Options
 const options = {
@@ -55,7 +55,8 @@ const server = createServer((req, res) => {
     if (req.method == "GET" && req.url == "/") {
         res.writeHead(200, { 'Content-Type': 'application/json' })
         res.write(JSON.stringify({
-            message: "Messenger-Push Server is running!"
+            message: "Messenger-Push Server is running!",
+            version: process.env.version
         }))
         res.end()
         return
