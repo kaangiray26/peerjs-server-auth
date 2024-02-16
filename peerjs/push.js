@@ -6,9 +6,6 @@ class Push {
     constructor() {
         this.access_token = null;
         this.endpoint = `https://fcm.googleapis.com/v1/projects/${process.env.FIREBASE_project_id}/`;
-
-        // Bind methods
-        this.send = this.send.bind(this);
     }
 
     async init() {
@@ -74,17 +71,16 @@ class Push {
             .catch(err => err);
     }
 
-
-    async send(content, res) {
-        if (!['from', 'to', 'body'].every(key => content.hasOwnProperty(key))) {
-            res.writeHead(400, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({
+    async send_metadata(metadata) {
+        // Check if metadata is valid
+        if (!['from', 'to', 'body'].every(key => metadata.hasOwnProperty(key))) {
+            return {
                 'message': "Please provide from, to, body parameters"
-            }))
-            return
+            }
         }
 
-        const { from, to, body } = content;
+        // Get values
+        const { from, to, body } = metadata;
 
         // Get notification_key
         const notification_key = await db.get_notification_key(to);
@@ -121,13 +117,6 @@ class Push {
             console.log("Access token expired. Refreshing...");
             return await this.fallback_send(notification_key, from, body);
         }
-
-        // Handle response
-        console.log("Response:", response);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-            'message': "Message sent"
-        }));
     }
 }
 

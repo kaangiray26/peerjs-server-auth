@@ -8,6 +8,27 @@ class CheckBrokenConnections {
         this.config = options;
     }
 
+    listen() {
+        this.interval = setTimeout(() => {
+            const clientsIds = this.realm.getClientsIds();
+            const now = new Date().getTime();
+
+            // Iterate through the clients and check if they are still alive
+            for (const clientId of clientsIds) {
+                const client = this.realm.getClientById(clientId);
+                const elapsed = now - client.getlastPing();
+
+                // Continue if they are still alive
+                if (elapsed < this.config.alive_timeout) {
+                    continue;
+                }
+
+                // Set the client as offline
+                client.setOffline();
+            }
+        }, this.checkInterval)
+    }
+
     start() {
         if (this.timeoutId) {
             clearTimeout(this.timeoutId);
@@ -15,9 +36,7 @@ class CheckBrokenConnections {
 
         this.timeoutId = setTimeout(() => {
             this.checkConnections();
-
             this.timeoutId = null;
-
             this.start();
         }, this.checkInterval);
     }
@@ -44,7 +63,9 @@ class CheckBrokenConnections {
 
             if (timeSinceLastPing < aliveTimeout) continue;
 
+            // TODO: Maybe just set the client as offline ?
             try {
+                console.log("Closing connection:", clientId);
                 client.getSocket()?.close();
             } finally {
                 this.realm.clearMessageQueue(clientId);

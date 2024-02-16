@@ -53,6 +53,7 @@ class MessagesExpire {
                 const seenKey = `${message.src}_${message.dst}`;
 
                 if (!seen[seenKey]) {
+                    console.log("Message expired:", message);
                     this.messageHandler.handle({
                         type: 'EXPIRE',
                         src: message.dst,
@@ -63,6 +64,7 @@ class MessagesExpire {
                 }
             }
 
+            // TODO: Maybe just remove the expired message ?
             this.realm.clearMessageQueue(destinationClientId);
         }
     }

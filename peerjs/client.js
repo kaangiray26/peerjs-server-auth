@@ -1,4 +1,5 @@
 // client.js
+import options from './config.js';
 
 class Client {
     constructor(id, token) {
@@ -6,6 +7,11 @@ class Client {
         this.token = token;
         this.socket = null;
         this.lastPing = new Date().getTime();
+    }
+
+    close() {
+        this.lastPing = 0;
+        this.socket.close();
     }
 
     getId() {
@@ -30,6 +36,11 @@ class Client {
 
     setLastPing(lastPing) {
         this.lastPing = lastPing;
+    }
+
+    isAlive() {
+        const nowTime = new Date().getTime();
+        return nowTime - this.lastPing < options.alive_timeout;
     }
 }
 

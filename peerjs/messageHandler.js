@@ -1,8 +1,9 @@
 //messageHandler.js
 
 class MessageHandler {
-    constructor(realm) {
+    constructor(realm, push) {
         this.realm = realm;
+        this.push = push;
     }
 
     handleHeartbeat(message) {
@@ -14,46 +15,26 @@ class MessageHandler {
         const { type, src, dst } = message;
         const destinationClient = this.realm.getClientById(dst);
 
-        // User is connected!
-        if (destinationClient) {
+        // Check if destinationClient is alive
+        if (destinationClient && destinationClient.isAlive()) {
             const socket = destinationClient.getSocket();
-            try {
-                if (socket) {
-                    const data = JSON.stringify(message);
-                    socket.send(data);
-                } else {
-                    throw new Error("Peer dead");
-                }
-            } catch (e) {
-                if (socket) {
-                    socket.close();
-                } else {
-                    this.realm.removeClientById(dst);
-                }
-
-                this.handleTransmission({
-                    type: 'LEAVE',
-                    src: dst,
-                    dst: src
-                }, this.realm)
+            if (!socket) {
+                throw new Error("Peer dead");
             }
-        } else {
-            const ignoredTypes = ['LEAVE', 'EXPIRE'];
 
-            if (!ignoredTypes.includes(type) && dst) {
-                this.realm.addMessageToQueue(dst, message);
-            } else if (type === 'LEAVE' && !dst) {
-                this.realm.removeClientById(src);
-            } else {
-                // Unavailable destination specified with message LEAVE or EXPIRE
-                // Ignore
-            }
+            const data = JSON.stringify(message);
+            socket.send(data);
+            return
+        }
+
+        // Fallback using Firebase
+        if (message.type == "OFFER") {
+            this.push.send_metadata(message.payload.metadata)
         }
     }
 
     handle(message) {
         // Switch on the message type
-
         switch (message.type) {
             // HEARTBEAT
             case 'HEARTBEAT':

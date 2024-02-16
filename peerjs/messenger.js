@@ -15,8 +15,8 @@ const options = {
     host: '0.0.0.0',
     port: 3000,
     path: '/peerjs',
-    expire_timeout: 1000,
-    alive_timeout: 5000,
+    expire_timeout: 5000,
+    alive_timeout: 6000,
     concurrent_limit: 5000,
     cleanup_out_msgs: 1000,
 }
@@ -61,25 +61,6 @@ const server = createServer((req, res) => {
         return
     }
 
-    // Route: /send
-    if (req.method == "POST" && req.url == "/send") {
-        // Check content type
-        if (!check_content_type(req, res)) {
-            res.end();
-            return
-        }
-
-        // Get request body
-        let body = '';
-        req.on('data', (chunk) => {
-            body += chunk;
-        })
-        req.on('end', () => {
-            push.send(JSON.parse(body), res);
-        })
-        return
-    }
-
     // Route: /register
     if (req.method == "POST" && req.url == "/register") {
         // Check content type
@@ -108,9 +89,9 @@ const server = createServer((req, res) => {
 
 // Services
 const realm = new Realm();
-const messageHandler = new MessageHandler(realm);
-const messagesExpire = new MessagesExpire(realm, options, messageHandler);
-const checkBrokenConnections = new CheckBrokenConnections(realm, options);
+const messageHandler = new MessageHandler(realm, push);
+// const messagesExpire = new MessagesExpire(realm, options, messageHandler);
+// const checkBrokenConnections = new CheckBrokenConnections(realm, options);
 
 // WebSockets
 const wss = new WebSocketServer({
@@ -142,17 +123,16 @@ wss.on('connection', async (ws, req) => {
         return;
     }
 
-    // Create new client
+    // Create new client if it doesn't exist
     console.log("New connection:", id);
-    const newClient = new Client(id, token);
-    newClient.setSocket(ws);
-    realm.setClient(newClient, id);
+    const client = new Client(id, key);
 
     // Send open message
     ws.send(JSON.stringify({
         type: 'OPEN'
     }));
 
+    // Event handlers
     ws.on('message', (data) => {
         const message = JSON.parse(data.toString());
         message.src = id;
@@ -161,13 +141,14 @@ wss.on('connection', async (ws, req) => {
 
     ws.on('close', () => {
         console.log("Connection closed:", id);
-        realm.removeClientById(id);
+        client.close();
     })
 
     ws.on('error', console.error);
 
-    messagesExpire.startMessagesExpiration();
-    checkBrokenConnections.start();
+    // Attach socket to the client
+    client.setSocket(ws);
+    realm.setClient(client, id);
 });
 
 server.listen(options.port, options.host, async () => {
