@@ -50,8 +50,7 @@ class Push {
 
     async fallback_send(notification_key, from, body) {
         await this.get_access_token();
-
-        return await fetch(this.endpoint + "messages:send", {
+        await fetch(this.endpoint + "messages:send", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -74,9 +73,8 @@ class Push {
     async send_metadata(metadata) {
         // Check if metadata is valid
         if (!['from', 'to', 'body'].every(key => metadata.hasOwnProperty(key))) {
-            return {
-                'message': "Please provide from, to, body parameters"
-            }
+            console.log('Please provide from, to, body parameters')
+            return
         }
 
         // Get values
@@ -85,10 +83,7 @@ class Push {
         // Get notification_key
         const notification_key = await db.get_notification_key(to);
         if (!notification_key) {
-            res.writeHead(400, { 'Content-Type': 'application/json' })
-            res.end(JSON.stringify({
-                'message': "User is not registered for push notifications"
-            }))
+            console.log('User is not registered for push notifications')
             return
         }
 
@@ -115,7 +110,7 @@ class Push {
         // Check for authentication error
         if (response.error && response.error.code === 401) {
             console.log("Access token expired. Refreshing...");
-            return await this.fallback_send(notification_key, from, body);
+            await this.fallback_send(notification_key, from, body);
         }
     }
 }

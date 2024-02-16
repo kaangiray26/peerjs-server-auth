@@ -1,7 +1,7 @@
 {
   "name": "messenger-push",
   "type": "module",
-  "version": "2.1",
+  "version": "2.2",
   "description": "Push Notifications Server for Messenger",
   "main": "server.js",
   "scripts": {
