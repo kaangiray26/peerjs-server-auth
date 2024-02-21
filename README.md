@@ -36,3 +36,5 @@ location /peerjs {
 	proxy_set_header Host $host;
 }
 ```
+
+You can get the latest `docker-compose.yml` file from the [releases](https://github.com/kaangiray26/peerjs-server-auth/releases) page.
