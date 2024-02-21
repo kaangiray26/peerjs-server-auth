@@ -1,9 +1,8 @@
 //messageHandler.js
 
 class MessageHandler {
-    constructor(realm, push) {
+    constructor(realm) {
         this.realm = realm;
-        this.push = push;
     }
 
     handleHeartbeat(message) {
@@ -25,11 +24,6 @@ class MessageHandler {
             const data = JSON.stringify(message);
             socket.send(data);
             return
-        }
-
-        // Fallback using Firebase
-        if (message.type == "OFFER") {
-            this.push.send_metadata(message.payload.metadata)
         }
     }
 

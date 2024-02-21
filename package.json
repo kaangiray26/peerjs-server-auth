@@ -1,27 +1,22 @@
 {
-  "name": "messenger-push",
+  "name": "peerjs-server-auth",
   "type": "module",
   "version": "2.2",
-  "description": "Push Notifications Server for Messenger",
-  "main": "server.js",
-  "scripts": {
-    "start": "sudo node server.js"
-  },
+  "description": "Server for PeerJS with Authentication",
+  "main": "peerjs/server.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kaangiray26/messenger-push.git"
+    "url": "git+https://github.com/kaangiray26/peerjs-server-auth.git"
   },
   "author": "kaangiray26",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/kaangiray26/messenger-push/issues"
+    "url": "https://github.com/kaangiray26/peerjs-server-auth/issues"
   },
-  "homepage": "https://github.com/kaangiray26/messenger-push#readme",
+  "homepage": "https://github.com/kaangiray26/peerjs-server-auth#readme",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "google-auth-library": "^9.6.3",
-    "node-fetch": "^3.3.2",
     "pg-promise": "^11.5.4",
     "ws": "^8.16.0"
   }

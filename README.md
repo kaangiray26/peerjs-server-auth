@@ -1,50 +1,38 @@
-# messenger-push
-Push Notifications Server for Messenger
+# peerjs-server-auth
+Server for PeerJS with Authentication
 
-## Notes
-* the entry point is `bin/peerjs.ts`
-* the `PeerServer` component can be found at `src/index.ts`
-* `PeerServer` also uses `express` and `ExpressPeerServer`, so look at it instead
-* `The PeerServer` has a callback, which is used in the `bin/peerjs.ts`. It is used to read the host and port information.
-* The `createInstance` component is from `src/instance.ts`
-  
-## ExpressPeerServer
+This project is forked from [peers/peerjs-server](https://github.com/peers/peerjs-server) to offer a proof of concept for authenticated peers. Normally, peers are given random IDs by the PeerJS server unless the peer explicitely specifies an ID. However, these IDs are only meant for establishing a connection since everyone can use any ID. This project gives peers the opportunity to reserve an ID with a token and use it for authentication.
+
+## Usage
+The usage is pretty straightforward for the client. Just create a new Peer as follows with the details of your server, id and token:
 ```
-function ExpressPeerServer(
-	server: https.Server | http.Server,
-	options?: Partial<IConfig>,
-) {
-	const app = express();
+import { Peer } from 'peerjs';
 
-	const newOptions: IConfig = {
-		...defaultConfig,
-		...options,
-	};
+// Specify your uuid and token
+const id = 'a7ec07d5-d919-49b2-ba95-f206961aadaf';
+const token = 'my-super-secret-token';
 
-	if (newOptions.proxied) {
-		app.set(
-			"trust proxy",
-			newOptions.proxied === "false" ? false : !!newOptions.proxied,
-		);
-	}
+const peer = new Peer([id], {
+	host: 'home.buzl.uk',
+	port: 443,
+	path: '/',
+	token: token,
+	secure: true
+});
+```
 
-	app.on("mount", () => {
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		if (!server) {
-			throw new Error(
-				"Server is not passed to constructor - " + "can't start PeerServer",
-			);
-		}
+If you use a ID-token pair that is not in the database, the server will register it as a new login. If you use a ID-token pair that is already in the database, the server will check if the token is correct. If it is, the peer is authenticated and can establish a connection. If it is not, the peer will be disconnected. Very simple.
 
-		createInstance({ app, server, options: newOptions });
-	});
+## Running the server
+If you want to run your own server, you can use the `docker-compose.yml` file, which will start a HTTP server and a WS server along with a PostgreSQL database. Just run `docker-compose up` and your server will be available at `http://localhost:3000`.
 
-	return app as Express & PeerServerEvents;
+If you want to run this service behind a reverse proxy, you can add the following under the `server` section of your nginx configuration:
+```
+location /peerjs {
+	proxy_pass http://localhost:3000;
+	proxy_http_version 1.1;
+	proxy_set_header Upgrade $http_upgrade;
+	proxy_set_header Connection "Upgrade";
+	proxy_set_header Host $host;
 }
 ```
-
-## Needed packages for the peerjs-server
-We will be building our application behind a reverse proxy with nginx, so we don't have to deal with ssl etc.
-* express
-* http from http
-* https from https

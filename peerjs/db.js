@@ -20,15 +20,6 @@ async function init() {
     })
 }
 
-async function register(secret, token) {
-    // Save token and secret
-    const response = await db.one("INSERT INTO notification (secret, notification_key) VALUES ($1, $2) ON CONFLICT (secret) DO UPDATE SET notification_key = $2 RETURNING notification_key", [secret, token]);
-    if (!response) {
-        return null;
-    }
-    return response;
-}
-
 async function register_peer(id, token) {
     // Check if id exists in the database
     const response = await db.oneOrNone("SELECT * FROM peers WHERE secret = $1", [id]);
@@ -46,17 +37,7 @@ async function register_peer(id, token) {
     return false;
 }
 
-async function get_notification_key(secret) {
-    const response = await db.oneOrNone("SELECT notification_key FROM notification WHERE secret = $1", [secret]);
-    if (!response) {
-        return null;
-    }
-    return response.notification_key;
-}
-
 export default {
     init,
-    register,
     register_peer,
-    get_notification_key,
 }

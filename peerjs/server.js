@@ -2,39 +2,11 @@
 
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
-import Push from './push.js';
 import db from './db.js';
 import Client from './client.js';
 import Realm from './realm.js';
 import MessageHandler from './messageHandler.js';
-// import MessagesExpire from './messagesExpire.js';
-// import CheckBrokenConnections from './checkBrokenConnections.js';
-
-// Options
-const options = {
-    host: '0.0.0.0',
-    port: 3000,
-    path: '/peerjs',
-    expire_timeout: 5000,
-    alive_timeout: 6000,
-    concurrent_limit: 5000,
-    cleanup_out_msgs: 1000,
-}
-
-// Push
-const push = new Push();
-
-function check_content_type(req, res) {
-    // Check content type
-    if (req.headers['content-type'] !== 'application/json') {
-        res.writeHead(400, { 'Content-Type': 'application/json' })
-        res.write(JSON.stringify({
-            message: "Please provide a JSON body"
-        }))
-        return false
-    }
-    return true
-}
+import options from './config.js';
 
 // Server
 const server = createServer((req, res) => {
@@ -55,29 +27,10 @@ const server = createServer((req, res) => {
     if (req.method == "GET" && req.url == "/") {
         res.writeHead(200, { 'Content-Type': 'application/json' })
         res.write(JSON.stringify({
-            message: "Messenger-Push Server is running!",
+            message: "PeerJS-Server-Auth is running!",
             version: process.env.version
         }))
         res.end()
-        return
-    }
-
-    // Route: /register
-    if (req.method == "POST" && req.url == "/register") {
-        // Check content type
-        if (!check_content_type(req, res)) {
-            res.end();
-            return
-        }
-
-        // Get request body
-        let body = '';
-        req.on('data', (chunk) => {
-            body += chunk;
-        })
-        req.on('end', () => {
-            push.register(JSON.parse(body), res);
-        })
         return
     }
 
@@ -90,9 +43,7 @@ const server = createServer((req, res) => {
 
 // Services
 const realm = new Realm();
-const messageHandler = new MessageHandler(realm, push);
-// const messagesExpire = new MessagesExpire(realm, options, messageHandler);
-// const checkBrokenConnections = new CheckBrokenConnections(realm, options);
+const messageHandler = new MessageHandler(realm);
 
 // WebSockets
 const wss = new WebSocketServer({
@@ -155,6 +106,5 @@ wss.on('connection', async (ws, req) => {
 server.listen(options.port, options.host, async () => {
     // Setup the database
     await db.init();
-    await push.init();
-    console.log(`Messenger-Push server started on  ${options.host}:${options.port}`);
+    console.log(`PeerJS-Server-Auth started on  ${options.host}:${options.port}`);
 })

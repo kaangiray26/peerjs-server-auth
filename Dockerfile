@@ -1,5 +1,5 @@
 FROM node:20.11.0-alpine
-WORKDIR /messenger-push
+WORKDIR /peerjs-server-auth
 
 # Copy files
 ADD peerjs ./peerjs
@@ -10,4 +10,4 @@ RUN npm install
 
 EXPOSE 3000
 
-CMD ["node", "peerjs/messenger.js"]
+CMD ["node", "peerjs/server.js"]
