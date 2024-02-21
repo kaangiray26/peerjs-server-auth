@@ -1,7 +1,7 @@
 {
   "name": "peerjs-server-auth",
   "type": "module",
-  "version": "2.2",
+  "version": "1.0",
   "description": "Server for PeerJS with Authentication",
   "main": "peerjs/server.js",
   "repository": {
